@@ -7,6 +7,14 @@ Manifest V3 Chrome/Chromium/Brave extension for exporting AI Arena chat logs fro
 - English roadmap: [ROADMAP.en.md](ROADMAP.en.md)
 - Дорожная карта: [ROADMAP.ru.md](ROADMAP.ru.md)
 
+
+# 🛡️ Security & Privacy / Безопасность
+This extension is built with a "Privacy First" approach. 
+Данное расширение разработано с приоритетом на конфиденциальность.
+
+- [English: Security Details](#-security--privacy-audit)
+- [Русский: Детали безопасности](#-безопасность-и-аудит)
+
 # Assets
 
 - Side-By-Side

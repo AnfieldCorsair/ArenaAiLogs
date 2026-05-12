@@ -60,3 +60,16 @@ powershell -ExecutionPolicy Bypass -File chrome-extension/tests/static-checks.ps
 
 - PDF is best treated as a visual archive. Use HTML for copy-friendly text and the best Side-by-Side layout.
 - `chat.lmsys.org` support uses a best-effort fallback because its DOM can vary from Arena snapshots.
+
+
+## 🛡️ Security & Privacy Audit
+
+I value transparency. Here is why this extension is safe to use:
+
+1. **100% Local Execution**: All processing (PDF generation, Markdown conversion) happens inside your browser. No data ever leaves your machine.
+2. **No External Calls**: The extension does not use `fetch` or `XMLHttpRequest` to send data to external servers. It has zero telemetry.
+3. **Bundled Dependencies**: Libraries like `html2pdf.js` and `turndown` are included locally in the `/lib` folder. We do not load scripts from CDNs or third-party clouds.
+4. **Manifest V3**: Complies with the latest Chrome security standards, which restrict the execution of remote code.
+5. **Open Source**: Every line of code is available for manual audit. You can verify the `static-checks.ps1` in the `/tests` folder to see how the code is validated.
+
+**No Cloud. No Tracking. Just your logs.**
