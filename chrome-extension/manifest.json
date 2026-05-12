@@ -1,0 +1,38 @@
+{
+  "manifest_version": 3,
+  "name": "Arena Chat Exporter",
+  "description": "On-page exporter for Arena AI chat histories with TXT, Markdown, and PDF export.",
+  "version": "1.1.0",
+  "permissions": [
+    "downloads",
+    "scripting",
+    "storage"
+  ],
+  "host_permissions": [
+    "*://*.arena.ai/*",
+    "*://chat.lmsys.org/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Arena Chat Exporter"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.arena.ai/*",
+        "*://chat.lmsys.org/*"
+      ],
+      "js": [
+        "lib/turndown.js",
+        "lib/html2pdf.bundle.js",
+        "content.js"
+      ],
+      "css": [
+        "content.css"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+}

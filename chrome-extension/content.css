@@ -1,0 +1,294 @@
+#arena-exporter-root {
+  width: 100%;
+  margin-top: 0.75rem;
+}
+
+#arena-exporter-root .arena-exporter-shell {
+  border: 1px solid hsl(var(--border-faint, 0 0% 80%));
+  background: hsl(var(--surface-secondary, 0 0% 98%));
+  color: hsl(var(--text-primary, 0 0% 10%));
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  padding: 0.75rem;
+}
+
+#arena-exporter-root .arena-exporter-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+#arena-exporter-root .arena-exporter-title {
+  display: flex;
+  align-items: center;
+  flex: 1 1 16rem;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+#arena-exporter-root .arena-exporter-top-controls {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex: 1 1 20rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+#arena-exporter-root .arena-exporter-lang-toggle {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 1 auto;
+  overflow: hidden;
+  border: 1px solid hsl(var(--border-faint, 0 0% 80%));
+  border-radius: 10px;
+  background: hsl(var(--surface-primary, 0 0% 100%));
+}
+
+#arena-exporter-root .arena-exporter-lang-button {
+  appearance: none;
+  min-height: 2rem;
+  border: 0;
+  border-right: 1px solid hsl(var(--border-faint, 0 0% 80%));
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  padding: 0 0.55rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+#arena-exporter-root .arena-exporter-lang-button:last-child {
+  border-right: 1px solid hsl(var(--border-faint, 0 0% 80%));
+}
+
+#arena-exporter-root .arena-exporter-lang-button[aria-pressed="true"] {
+  background: hsl(var(--surface-tertiary, 0 0% 94%));
+}
+
+#arena-exporter-root .arena-exporter-lang-select {
+  min-height: 2rem;
+  max-width: 6.5rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  padding: 0 0.45rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+#arena-exporter-root .arena-exporter-badge {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid hsl(var(--border-faint, 0 0% 80%));
+  background: hsl(var(--surface-primary, 0 0% 100%));
+  color: hsl(var(--text-secondary, 0 0% 35%));
+  border-radius: 999px;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+#arena-exporter-root .arena-exporter-toggle,
+#arena-exporter-root .arena-exporter-action {
+  appearance: none;
+  border: 1px solid hsl(var(--border-faint, 0 0% 80%));
+  background: transparent;
+  color: inherit;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 150ms ease, border-color 150ms ease, transform 150ms ease;
+}
+
+#arena-exporter-root .arena-exporter-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2rem;
+  padding: 0 0.85rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+#arena-exporter-root .arena-exporter-action {
+  min-height: 2.25rem;
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  font-size: 0.8125rem;
+}
+
+#arena-exporter-root .arena-exporter-toggle:hover,
+#arena-exporter-root .arena-exporter-action:hover {
+  background: hsl(var(--surface-tertiary, 0 0% 94%));
+  border-color: hsl(var(--interactive-normal, 0 0% 70%));
+}
+
+#arena-exporter-root .arena-exporter-toggle:disabled,
+#arena-exporter-root .arena-exporter-action:disabled,
+#arena-exporter-root .arena-exporter-select:disabled,
+#arena-exporter-root .arena-exporter-input:disabled,
+#arena-exporter-root .arena-exporter-lang-button:disabled,
+#arena-exporter-root .arena-exporter-lang-select:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+#arena-exporter-root .arena-exporter-toggle:active,
+#arena-exporter-root .arena-exporter-action:active {
+  transform: translateY(1px);
+}
+
+#arena-exporter-root .arena-exporter-panel {
+  display: none;
+  margin-top: 0.75rem;
+  border-top: 1px solid hsl(var(--border-faint, 0 0% 80%));
+  padding-top: 0.75rem;
+}
+
+#arena-exporter-root[data-open="true"] .arena-exporter-panel {
+  display: block;
+}
+
+#arena-exporter-root .arena-exporter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 0.75rem;
+}
+
+#arena-exporter-root .arena-exporter-fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+#arena-exporter-root .arena-exporter-label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: hsl(var(--text-secondary, 0 0% 35%));
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+#arena-exporter-root .arena-exporter-select {
+  width: 100%;
+  min-height: 2.25rem;
+  border: 1px solid hsl(var(--border-faint, 0 0% 80%));
+  background: hsl(var(--surface-primary, 0 0% 100%));
+  color: inherit;
+  border-radius: 10px;
+  padding: 0 0.75rem;
+  font-size: 0.875rem;
+}
+
+#arena-exporter-root .arena-exporter-input {
+  width: 100%;
+  min-height: 2.25rem;
+  border: 1px solid hsl(var(--border-faint, 0 0% 80%));
+  background: hsl(var(--surface-primary, 0 0% 100%));
+  color: inherit;
+  border-radius: 10px;
+  padding: 0 0.75rem;
+  font-size: 0.875rem;
+}
+
+#arena-exporter-root .arena-exporter-inline-row {
+  display: grid;
+  grid-template-columns: minmax(8rem, max-content) minmax(0, 1fr);
+  align-items: center;
+  gap: 0.5rem;
+}
+
+#arena-exporter-root .arena-exporter-mini-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8125rem;
+  white-space: nowrap;
+}
+
+#arena-exporter-root .arena-exporter-checkbox-fieldset {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.25rem;
+  padding-top: 1.35rem;
+}
+
+#arena-exporter-root .arena-exporter-checkbox-label {
+  font-size: 0.875rem;
+  color: inherit;
+}
+
+#arena-exporter-root .arena-exporter-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr));
+  gap: 0.6rem;
+  margin-top: 0.85rem;
+}
+
+#arena-exporter-root .arena-exporter-hint {
+  margin-top: 0.75rem;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: hsl(var(--text-secondary, 0 0% 35%));
+}
+
+#arena-exporter-root .arena-exporter-status {
+  min-height: 1.2rem;
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  color: hsl(var(--interactive-active, 210 90% 45%));
+}
+
+#arena-exporter-root .arena-exporter-status[data-tone="error"] {
+  color: hsl(var(--destructive, 0 75% 45%));
+}
+
+@media (max-width: 768px) {
+  #arena-exporter-root .arena-exporter-topbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  #arena-exporter-root .arena-exporter-toggle {
+    width: 100%;
+  }
+
+  #arena-exporter-root .arena-exporter-top-controls {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  #arena-exporter-root .arena-exporter-lang-toggle {
+    flex: 1 1 12rem;
+  }
+
+  #arena-exporter-root .arena-exporter-toggle {
+    flex: 1 1 auto;
+  }
+}
+
+@media (max-width: 520px) {
+  #arena-exporter-root .arena-exporter-inline-row {
+    grid-template-columns: 1fr;
+  }
+
+  #arena-exporter-root .arena-exporter-lang-toggle,
+  #arena-exporter-root .arena-exporter-toggle {
+    width: 100%;
+  }
+
+  #arena-exporter-root .arena-exporter-lang-button,
+  #arena-exporter-root .arena-exporter-lang-select {
+    flex: 1 1 0;
+  }
+}
