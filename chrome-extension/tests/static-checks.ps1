@@ -23,7 +23,7 @@ function Assert-True {
 }
 
 Assert-True ($manifest.manifest_version -eq 3) "manifest_version must be 3."
-Assert-True ($manifest.version -eq "1.1.0") "Manifest version must be 1.1.0."
+Assert-True ($manifest.version -eq "1.2.0") "Manifest version must be 1.2.0."
 Assert-True ($manifest.permissions -contains "downloads") "downloads permission is required."
 Assert-True ($manifest.permissions -contains "storage") "storage permission is required for saved preferences."
 
@@ -48,5 +48,19 @@ Assert-True ($content -match "data-setting-group") "Format-specific setting grou
 Assert-True ($css -match "@media \(max-width: 520px\)") "CSS must include compact mobile layout rules."
 Assert-True ($css -match "arena-exporter-lang-select") "CSS must style the Other language dropdown."
 Assert-True ($css -match "repeat\(auto-fit, minmax\(min\(100%, 170px\), 1fr\)\)") "Action grid must use adaptive columns."
+
+# --- Chat mode detection and two-answers-in-direct-chat regression guards ---
+Assert-True ($content -match "function detectChatMode") "Mode detection must be evidence based (detectChatMode)."
+Assert-True ($content -match "function readModeLabelEvidence") "Mode selector label must be read as evidence."
+Assert-True ($content -match "MODE_LABEL_PATTERNS") "Mode label keywords must live in MODE_LABEL_PATTERNS."
+Assert-True ($content -match "MODE_OVERRIDE") "Manual mode override must exist."
+Assert-True ($content -match 'name="arena-exporter-mode"') "Mode override control must be rendered."
+Assert-True ($content -match "modeOverride") "Mode override must be persisted in preferences."
+Assert-True ($content -match "collectAssistantAnswerNodes") "Direct parser must handle answer carousels (two answers per prompt)."
+Assert-True ($content -match "variantSuffix") "Answer variants must be labelled in exports."
+Assert-True ($content -match "hasAssistantAnswers") "Export must not silently drop model answers."
+Assert-True ($content -match "function buildDiagnosticsReport") "Diagnostics report must be available."
+Assert-True ($content -match "__arenaExporterInternals") "Internals must be exposed for diagnostics/tests."
+Assert-True ($content -notmatch "eval\(") "No eval() in the content script."
 
 Write-Host "Static checks passed."

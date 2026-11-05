@@ -1,0 +1,12 @@
+{
+  "name": "arena-chat-exporter-tests",
+  "private": true,
+  "version": "1.0.0",
+  "description": "jsdom regression tests for Arena Chat Exporter DOM parsing.",
+  "scripts": {
+    "test": "node --test"
+  },
+  "devDependencies": {
+    "jsdom": "^24.1.3"
+  }
+}

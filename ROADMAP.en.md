@@ -24,8 +24,10 @@ These are possible directions for Arena Chat Exporter. This is not a release pro
 ## Parser
 
 - More heuristics for Gradio/Svelte DOM layouts.
-- Automated tests against saved Direct and Side-by-Side HTML snapshots.
-- Diagnostic mode showing which selectors matched messages and model names.
+- More detection signals (vote buttons, column headers) once real snapshots are available.
+- ~~Diagnostic mode showing which selectors matched messages and model names.~~ Shipped in 1.2.0 as the `Diagnostics` panel with `Copy report`.
+- ~~Automated tests against saved Direct and Side-by-Side HTML snapshots.~~ Partially shipped in 1.2.0: jsdom tests over synthetic snapshots (`tests/mode-detection.test.js`). Next step: real arena.ai HTML snapshots.
+- Mode detection: collect real HTML snapshots of broken chats and use them as test fixtures.
 
 ## Publishing
 

@@ -7,6 +7,39 @@
     BATTLE: "battle"
   };
 
+  const MODE_OVERRIDE = {
+    AUTO: "auto",
+    DIRECT: MODE.DIRECT,
+    BATTLE: MODE.BATTLE
+  };
+
+  const CONFIDENCE = {
+    MANUAL: "manual",
+    HIGH: "high",
+    MEDIUM: "medium",
+    LOW: "low"
+  };
+
+  // Chat mode is written in the mode selector of the Arena UI. The label is the
+  // most reliable signal we have, so it wins over every structural heuristic.
+  const MODE_LABEL_PATTERNS = {
+    battle: /(?:side\s*[-\u2010-\u2015]?\s*by\s*[-\u2010-\u2015]?\s*side|sidebyside|battle|head[\s-]*to[\s-]*head|compare|comparison|versus|\bvs\b|сравн|баттл|бок\s*о\s*бок)/i,
+    direct: /(?:direct|single[\s-]*(?:chat|model)|one[\s-]*on[\s-]*one|directo|одиночн|прямой\s*чат)/i
+  };
+
+  const MODE_LABEL_SCOPE_SELECTOR = [
+    '[role="combobox"]',
+    '[aria-haspopup="listbox"]',
+    '[aria-haspopup="menu"]',
+    "select"
+  ].join(", ");
+
+  // Names that Arena puts on anonymous / variant answers. They look "distinct"
+  // but they do not prove that two different models are compared.
+  const GENERIC_MODEL_NAME_PATTERN = /^(?:model|response|answer|option|variant|assistant|модель|ответ|вариант)\s*[-#:]?\s*[a-z0-9]{1,2}$/i;
+
+  const DETECTION_CACHE_TTL_MS = 400;
+
   const FORMAT = {
     TXT: "txt",
     MD: "md",
@@ -37,7 +70,8 @@
     includeSeparators: true,
     separatorStyle: SEPARATOR.LINE,
     customSeparator: "---",
-    saveAs: false
+    saveAs: false,
+    modeOverride: MODE_OVERRIDE.AUTO
   };
 
   const SIDE = {
@@ -143,7 +177,22 @@
       "model.right": "Right Model",
       "title.direct": "Arena Direct Chat",
       "title.battle": "Arena Side-by-Side Chat",
-      "title.ui": "Export Chat"
+      "title.ui": "Export Chat",
+      "label.variant": "option {index} of {total}",
+      "badge.directUnsure": "Mode: Direct (?)",
+      "badge.battleUnsure": "Mode: Side-by-Side (?)",
+      "badge.hint": "reason: {reason}, confidence: {confidence}",
+      "field.mode": "Chat mode",
+      "mode.auto": "Auto-detect",
+      "mode.direct": "Direct chat",
+      "mode.battle": "Side-by-Side",
+      "button.diagnostics": "Diagnostics",
+      "button.diagnosticsHide": "Hide diagnostics",
+      "button.diagnosticsCopy": "Copy report",
+      "status.diagnosticsCopied": "Diagnostics copied to clipboard.",
+      "status.modeUncertain": "Mode detection is uncertain: the page gave no clear marker. If the export looks wrong, set Chat mode manually.",
+      "status.modeFallback": "mode fallback applied ({mode})",
+      "error.diagnosticsCopy": "Could not copy the diagnostics report."
     },
     ru: {
       "action.directFull": "Экспорт: весь чат",
@@ -186,7 +235,22 @@
       "model.right": "Правая модель",
       "title.direct": "Arena Direct Chat",
       "title.battle": "Arena Side-by-Side Chat",
-      "title.ui": "Экспорт чата"
+      "title.ui": "Экспорт чата",
+      "label.variant": "вариант {index} из {total}",
+      "badge.directUnsure": "Режим: Direct (?)",
+      "badge.battleUnsure": "Режим: Side-by-Side (?)",
+      "badge.hint": "причина: {reason}, уверенность: {confidence}",
+      "field.mode": "Режим чата",
+      "mode.auto": "Определять автоматически",
+      "mode.direct": "Direct чат",
+      "mode.battle": "Side-by-Side",
+      "button.diagnostics": "Диагностика",
+      "button.diagnosticsHide": "Скрыть диагностику",
+      "button.diagnosticsCopy": "Копировать отчёт",
+      "status.diagnosticsCopied": "Отчёт диагностики скопирован.",
+      "status.modeUncertain": "Режим определён неуверенно: на странице нет явного маркера. Если экспорт выглядит неправильно, выберите режим чата вручную.",
+      "status.modeFallback": "применён запасной разбор ({mode})",
+      "error.diagnosticsCopy": "Не удалось скопировать отчёт диагностики."
     }
   };
 
@@ -287,7 +351,22 @@
     "error.emptySelection": "Diese Exportoption enthalt keine Nachrichten.",
     "error.download": "Download konnte nicht gestartet werden.",
     "fallback.noText": "[Kein Text gefunden]",
-    "title.ui": "Chat exportieren"
+    "title.ui": "Chat exportieren",
+    "label.variant": "Variante {index} von {total}",
+    "badge.directUnsure": "Modus: Direct (?)",
+    "badge.battleUnsure": "Modus: Side-by-Side (?)",
+    "badge.hint": "Grund: {reason}, Sicherheit: {confidence}",
+    "field.mode": "Chat-Modus",
+    "mode.auto": "Automatisch erkennen",
+    "mode.direct": "Direct-Chat",
+    "mode.battle": "Side-by-Side",
+    "button.diagnostics": "Diagnose",
+    "button.diagnosticsHide": "Diagnose ausblenden",
+    "button.diagnosticsCopy": "Bericht kopieren",
+    "status.diagnosticsCopied": "Diagnosebericht kopiert.",
+    "status.modeUncertain": "Der Modus ist unsicher erkannt. Falls der Export falsch aussieht, Chat-Modus manuell wahlen.",
+    "status.modeFallback": "Ersatz-Parsing aktiv ({mode})",
+    "error.diagnosticsCopy": "Diagnosebericht konnte nicht kopiert werden."
   };
 
   I18N.es = {
@@ -333,7 +412,22 @@
     "error.emptySelection": "La opcion elegida no contiene mensajes.",
     "error.download": "No se pudo iniciar la descarga.",
     "fallback.noText": "[Texto no encontrado]",
-    "title.ui": "Exportar chat"
+    "title.ui": "Exportar chat",
+    "label.variant": "opcion {index} de {total}",
+    "badge.directUnsure": "Modo: Direct (?)",
+    "badge.battleUnsure": "Modo: Side-by-Side (?)",
+    "badge.hint": "motivo: {reason}, confianza: {confidence}",
+    "field.mode": "Modo del chat",
+    "mode.auto": "Detectar automaticamente",
+    "mode.direct": "Chat directo",
+    "mode.battle": "Side-by-Side",
+    "button.diagnostics": "Diagnostico",
+    "button.diagnosticsHide": "Ocultar diagnostico",
+    "button.diagnosticsCopy": "Copiar informe",
+    "status.diagnosticsCopied": "Informe copiado.",
+    "status.modeUncertain": "El modo se detecto con poca confianza. Si la exportacion no es correcta, elige el modo manualmente.",
+    "status.modeFallback": "analisis alternativo aplicado ({mode})",
+    "error.diagnosticsCopy": "No se pudo copiar el informe."
   };
 
   I18N.pt = {
@@ -379,7 +473,22 @@
     "error.emptySelection": "A opcao escolhida nao contem mensagens.",
     "error.download": "Nao foi possivel iniciar o download.",
     "fallback.noText": "[Texto nao encontrado]",
-    "title.ui": "Exportar chat"
+    "title.ui": "Exportar chat",
+    "label.variant": "opcao {index} de {total}",
+    "badge.directUnsure": "Modo: Direct (?)",
+    "badge.battleUnsure": "Modo: Side-by-Side (?)",
+    "badge.hint": "motivo: {reason}, confianca: {confidence}",
+    "field.mode": "Modo do chat",
+    "mode.auto": "Detectar automaticamente",
+    "mode.direct": "Chat direto",
+    "mode.battle": "Side-by-Side",
+    "button.diagnostics": "Diagnostico",
+    "button.diagnosticsHide": "Ocultar diagnostico",
+    "button.diagnosticsCopy": "Copiar relatorio",
+    "status.diagnosticsCopied": "Relatorio copiado.",
+    "status.modeUncertain": "O modo foi detectado com pouca confianca. Se a exportacao estiver errada, escolha o modo manualmente.",
+    "status.modeFallback": "analise alternativa aplicada ({mode})",
+    "error.diagnosticsCopy": "Nao foi possivel copiar o relatorio."
   };
 
   const state = {
@@ -392,6 +501,16 @@
     otherLanguageSelect: null,
     observer: null,
     mode: null,
+    modeConfidence: null,
+    modeReason: null,
+    detection: null,
+    parseNote: "",
+    analysisCache: null,
+    modeWarning: null,
+    diagnostics: null,
+    diagnosticsToggle: null,
+    diagnosticsCopyButton: null,
+    diagnosticsOpen: false,
     busy: false,
     turndown: null,
     language: detectInitialLanguage(),
@@ -543,26 +662,353 @@
     return document.querySelector(SELECTORS.chatArea);
   }
 
-  function getHeaderModeText(chatArea) {
-    const labels = Array.from(chatArea.querySelectorAll('button[role="combobox"] p'));
-    return labels.map((node) => (node.textContent || "").trim()).find(Boolean) || "";
+  function getDetachedModelName(node) {
+    const raw = normalizeBreaks(node?.textContent || "").replace(/\s+/g, " ").trim();
+    return raw ? cleanModelName(raw) : "";
   }
 
+  function isRenderedNode(node) {
+    if (!(node instanceof HTMLElement)) {
+      return false;
+    }
+
+    if (node.closest(`#${ROOT_ID}`)) {
+      return false;
+    }
+
+    if (
+      node.closest(
+        '[hidden], [aria-hidden="true"], template, [role="listbox"], [role="option"], [role="menu"], [role="menuitem"], [data-radix-popper-content-wrapper]'
+      )
+    ) {
+      return false;
+    }
+
+    const style = window.getComputedStyle(node);
+    return style.display !== "none" && style.visibility !== "hidden" && style.opacity !== "0";
+  }
+
+  function ownTextOf(node) {
+    return Array.from(node.childNodes || [])
+      .filter((child) => child.nodeType === Node.TEXT_NODE)
+      .map((child) => child.textContent || "")
+      .join(" ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  // Reads every visible mode selector around the chat and turns its label into a
+  // vote for "direct" or "battle". Labels that mention both modes at once (an
+  // expanded dropdown, a merged value, a marketing banner) are ignored instead
+  // of being silently treated as "side-by-side".
+  function readModeLabelEvidence(chatArea) {
+    const evidence = {
+      votes: [],
+      sources: []
+    };
+
+    const scopeCandidates = [chatArea, chatArea.parentElement, document.querySelector("main"), document.body];
+    const scopes = scopeCandidates.filter((scope, index) => {
+      return scope && scopeCandidates.indexOf(scope) === index;
+    });
+
+    const seen = new Set();
+    const consider = (value, source) => {
+      const text = normalizeBreaks(String(value || "")).replace(/\s+/g, " ").trim();
+      if (!text || text.length > 64) {
+        return;
+      }
+
+      const mentionsBattle = MODE_LABEL_PATTERNS.battle.test(text);
+      const mentionsDirect = MODE_LABEL_PATTERNS.direct.test(text);
+      if (mentionsBattle === mentionsDirect) {
+        // Nothing matched, or both modes are mentioned -> useless as evidence.
+        return;
+      }
+
+      evidence.votes.push(mentionsBattle ? MODE.BATTLE : MODE.DIRECT);
+      evidence.sources.push(`${source}: "${text}"`);
+    };
+
+    scopes.forEach((scope) => {
+      scope.querySelectorAll(MODE_LABEL_SCOPE_SELECTOR).forEach((node) => {
+        if (seen.has(node) || !isRenderedNode(node)) {
+          return;
+        }
+
+        seen.add(node);
+        consider(node.getAttribute("aria-valuetext"), "aria-valuetext");
+        consider(node.getAttribute("aria-label"), "aria-label");
+
+        const targets = [node, ...Array.from(node.querySelectorAll("p, span, div, strong, b"))];
+        targets.forEach((target) => {
+          if (!isRenderedNode(target)) {
+            return;
+          }
+
+          consider(ownTextOf(target), target === node ? "mode-selector" : "mode-selector-label");
+        });
+      });
+    });
+
+    return evidence;
+  }
+
+  function readSlideModelName(slide) {
+    const chip = slide.querySelector(SELECTORS.battleModelName) || slide.querySelector(SELECTORS.directModelNameButton);
+    const fromChip = getDetachedModelName(chip);
+    if (fromChip) {
+      return { name: fromChip, source: "chip" };
+    }
+
+    const fromHiddenTitle = parseHiddenMessageTitle(slide);
+    if (fromHiddenTitle) {
+      return { name: fromHiddenTitle, source: "hidden-title" };
+    }
+
+    return { name: "", source: "none" };
+  }
+
+  function measureSlideLayout(slides) {
+    if (slides.length < 2 || typeof slides[0].getBoundingClientRect !== "function") {
+      return "unknown";
+    }
+
+    const rects = slides.map((slide) => slide.getBoundingClientRect());
+    const usable = rects.filter((rect) => rect.width > 0 && rect.height > 0);
+    if (usable.length < 2) {
+      return "unknown";
+    }
+
+    const [first, second] = rects;
+    const overlapX = Math.max(0, Math.min(first.right, second.right) - Math.max(first.left, second.left));
+    const overlapY = Math.max(0, Math.min(first.bottom, second.bottom) - Math.max(first.top, second.top));
+    const overlapRatioX = overlapX / Math.max(1, Math.min(first.width, second.width));
+    const overlapRatioY = overlapY / Math.max(1, Math.min(first.height, second.height));
+
+    if (overlapRatioX > 0.6 && overlapRatioY > 0.6) {
+      // Both answers are painted in the same slot -> slides of one carousel,
+      // i.e. "pick one of two answers" inside a single chat column.
+      return "stacked-slot";
+    }
+
+    if (overlapRatioY > 0.6 && overlapRatioX <= 0.1) {
+      return "side-by-side-columns";
+    }
+
+    return "unknown";
+  }
+
+  function analyzeChatStructure(chatArea) {
+    const root = getTimelineRoot(chatArea);
+    const items = getTimelineItems(chatArea);
+    const analysis = {
+      timelineFound: Boolean(root),
+      itemCount: items.length,
+      userCount: 0,
+      plainAssistantCount: 0,
+      carousels: [],
+      slideLayout: "unknown"
+    };
+
+    items.forEach((item) => {
+      if (item.querySelector(`${SELECTORS.directUserBubble} ${SELECTORS.prose}`)) {
+        analysis.userCount += 1;
+        return;
+      }
+
+      const carousel = item.querySelector(SELECTORS.carousel);
+      if (!carousel) {
+        analysis.plainAssistantCount += 1;
+        return;
+      }
+
+      const slides = Array.from(carousel.querySelectorAll(SELECTORS.slide));
+      const slideInfo = slides.map((slide) => {
+        const model = readSlideModelName(slide);
+        return {
+          modelName: model.name,
+          modelSource: model.source,
+          proseCount: slide.querySelectorAll(SELECTORS.prose).length
+        };
+      });
+
+      const layout = measureSlideLayout(slides);
+      if (layout !== "unknown") {
+        analysis.slideLayout = layout;
+      }
+
+      const namedSlides = slideInfo.filter((slide) => slide.modelName);
+      const uniqueNames = new Set(namedSlides.map((slide) => slide.modelName.toLowerCase()));
+      const concreteNames = new Set(
+        namedSlides
+          .map((slide) => slide.modelName)
+          .filter((name) => !GENERIC_MODEL_NAME_PATTERN.test(name))
+          .map((name) => name.toLowerCase())
+      );
+
+      analysis.carousels.push({
+        slideCount: slides.length,
+        namedSlideCount: namedSlides.length,
+        uniqueNameCount: uniqueNames.size,
+        concreteNameCount: concreteNames.size,
+        hasVariantLabels: concreteNames.size === 0 && namedSlides.length === slides.length,
+        slides: slideInfo
+      });
+    });
+
+    return analysis;
+  }
+
+  // Mode detection reads the DOM (structure + geometry + labels). It is called
+  // from a MutationObserver, so the expensive part is cached for a short window.
+  function getCachedEvidence(chatArea) {
+    const now = Date.now();
+    const cache = state.analysisCache;
+    if (cache && cache.chatArea === chatArea && now - cache.at < DETECTION_CACHE_TTL_MS) {
+      return cache.evidence;
+    }
+
+    const evidence = {
+      analysis: analyzeChatStructure(chatArea),
+      labelEvidence: readModeLabelEvidence(chatArea)
+    };
+    state.analysisCache = { chatArea, at: now, evidence };
+    return evidence;
+  }
+
+  function invalidateAnalysisCache() {
+    state.analysisCache = null;
+  }
+
+  function buildDetection(mode, confidence, reason, signals, analysis) {
+    return {
+      mode,
+      confidence,
+      reason,
+      signals,
+      analysis: analysis || null
+    };
+  }
+
+  // Mode detection = evidence, not a single selector.
+  //
+  // Before this patch any carousel with slides in the chat made the extension
+  // report "Side-by-Side". Since Arena renders "here are two answers, pick the
+  // better one" inside a Direct chat with the very same carousel/slide markup,
+  // that check produced a false "Side-by-Side" and a broken parse. Now the mode
+  // selector label decides first, and the carousel is only compared as evidence
+  // (same answer slot vs. two different model columns).
+  function detectChatMode(chatArea) {
+    if (!chatArea) {
+      return buildDetection(MODE.DIRECT, CONFIDENCE.LOW, "no-chat-area", ["chat area was not found"], null);
+    }
+
+    const override = state.preferences?.modeOverride || MODE_OVERRIDE.AUTO;
+    const { analysis, labelEvidence } = getCachedEvidence(chatArea);
+    const signals = [...labelEvidence.sources];
+
+    if (override === MODE_OVERRIDE.DIRECT || override === MODE_OVERRIDE.BATTLE) {
+      return buildDetection(
+        override,
+        CONFIDENCE.MANUAL,
+        "manual-override",
+        [`manual override: ${override}`, ...signals],
+        analysis
+      );
+    }
+
+    const battleVotes = labelEvidence.votes.filter((vote) => vote === MODE.BATTLE).length;
+    const directVotes = labelEvidence.votes.filter((vote) => vote === MODE.DIRECT).length;
+
+    if (battleVotes && !directVotes) {
+      return buildDetection(MODE.BATTLE, CONFIDENCE.HIGH, "mode-selector-label", signals, analysis);
+    }
+
+    if (directVotes && !battleVotes) {
+      return buildDetection(MODE.DIRECT, CONFIDENCE.HIGH, "mode-selector-label", signals, analysis);
+    }
+
+    if (!analysis.carousels.length) {
+      return buildDetection(MODE.DIRECT, CONFIDENCE.HIGH, "no-carousel", signals, analysis);
+    }
+
+    const multiSlide = analysis.carousels.filter((carousel) => carousel.slideCount > 1);
+    if (!multiSlide.length) {
+      return buildDetection(MODE.DIRECT, CONFIDENCE.HIGH, "single-slide-carousel", signals, analysis);
+    }
+
+    signals.push(`carousels: ${analysis.carousels.length} (multi-slide: ${multiSlide.length})`);
+
+    const concreteColumns = multiSlide.filter((carousel) => carousel.concreteNameCount > 1);
+    const sharedAnswers = multiSlide.filter(
+      (carousel) => carousel.namedSlideCount === carousel.slideCount && carousel.uniqueNameCount === 1
+    );
+    const variantOnly = multiSlide.filter((carousel) => carousel.hasVariantLabels);
+
+    if (analysis.slideLayout === "side-by-side-columns") {
+      signals.push("layout: two non-overlapping columns");
+      return buildDetection(MODE.BATTLE, CONFIDENCE.HIGH, "side-by-side-layout", signals, analysis);
+    }
+
+    if (analysis.slideLayout === "stacked-slot") {
+      signals.push("layout: both slides painted in the same slot");
+      return buildDetection(MODE.DIRECT, CONFIDENCE.MEDIUM, "answers-in-one-slot", signals, analysis);
+    }
+
+    if (concreteColumns.length && !sharedAnswers.length && !variantOnly.length) {
+      signals.push(`distinct model names on slides: ${concreteColumns.length} carousel(s)`);
+      return buildDetection(MODE.BATTLE, CONFIDENCE.MEDIUM, "distinct-slide-models", signals, analysis);
+    }
+
+    if (variantOnly.length && !concreteColumns.length) {
+      signals.push("slide labels look like answer variants (Response 1/2, Model A/B)");
+      return buildDetection(MODE.DIRECT, CONFIDENCE.MEDIUM, "variant-slide-labels", signals, analysis);
+    }
+
+    if (sharedAnswers.length && !concreteColumns.length) {
+      signals.push("both slides report the same model");
+      return buildDetection(MODE.DIRECT, CONFIDENCE.MEDIUM, "shared-slide-models", signals, analysis);
+    }
+
+    // Unknown carousel: keep the export usable (Direct parses every slide as an
+    // answer variant, nothing is lost) and flag it in the UI as uncertain.
+    signals.push("carousel without reliable mode markers");
+    return buildDetection(MODE.DIRECT, CONFIDENCE.LOW, "ambiguous-carousel", signals, analysis);
+  }
+
+  // Backwards-compatible shim: the rest of the code only needs the mode itself.
   function detectMode(chatArea) {
     if (!chatArea) {
       return null;
     }
 
-    if (chatArea.querySelector(`${SELECTORS.carousel} ${SELECTORS.slide}`)) {
-      return MODE.BATTLE;
+    return detectChatMode(chatArea).mode;
+  }
+
+  // A confident verdict about a header label must not be overridden by a
+  // low-confidence structural guess that appears while the chat is streaming.
+  function resolveMode(chatArea) {
+    const detection = detectChatMode(chatArea);
+    state.detection = detection;
+
+    const stickyModes = [CONFIDENCE.MANUAL, CONFIDENCE.HIGH];
+    if (
+      state.mode &&
+      state.modeConfidence &&
+      stickyModes.includes(state.modeConfidence) &&
+      detection.confidence === CONFIDENCE.LOW &&
+      detection.reason !== "manual-override"
+    ) {
+      return {
+        ...detection,
+        mode: state.mode,
+        confidence: state.modeConfidence,
+        reason: `${state.modeReason} (kept, new guess "${detection.reason}" is weak)`
+      };
     }
 
-    const headerMode = getHeaderModeText(chatArea);
-    if (/side by side/i.test(headerMode)) {
-      return MODE.BATTLE;
-    }
-
-    return MODE.DIRECT;
+    return detection;
   }
 
   function isVisibleFormField(node) {
@@ -735,19 +1181,63 @@
     };
   }
 
+  // Collects every answer rendered in a timeline item. In a Direct chat Arena may
+  // put two candidate answers ("pick the better one") into the same carousel that
+  // Side-by-Side uses for two models. Each slide is a separate answer, never a
+  // lost message.
+  function collectAssistantAnswerNodes(item) {
+    const carousel = item.querySelector(SELECTORS.carousel);
+
+    if (carousel) {
+      const slides = Array.from(carousel.querySelectorAll(SELECTORS.slide));
+      const fromSlides = slides
+        .map((slide) => ({
+          node: slide.querySelector(`.bg-surface-primary ${SELECTORS.prose}`) || slide.querySelector(SELECTORS.prose),
+          container: slide
+        }))
+        .filter((entry) => Boolean(entry.node));
+
+      if (fromSlides.length) {
+        return fromSlides;
+      }
+
+      const carouselProse = carousel.querySelector(SELECTORS.prose);
+      return carouselProse ? [{ node: carouselProse, container: carousel }] : [];
+    }
+
+    const preferred = item.querySelector(`.bg-surface-primary ${SELECTORS.prose}`);
+    const node = preferred || item.querySelector(SELECTORS.prose);
+    return node ? [{ node, container: item }] : [];
+  }
+
   function parseArenaAssistantItem(item) {
-    if (item.querySelector(SELECTORS.carousel)) {
+    const answers = collectAssistantAnswerNodes(item);
+    if (!answers.length) {
       return null;
     }
 
-    const proseNode = item.querySelector(`.bg-surface-primary ${SELECTORS.prose}`);
-    if (!proseNode) {
+    const fallbackName = parseDirectModelName(item);
+    const total = answers.length;
+    const messages = answers
+      .map((answer, index) => {
+        const slideName = getDetachedModelName(answer.container.querySelector(SELECTORS.battleModelName));
+        const message = buildMessage("assistant", null, slideName || fallbackName, answer.node);
+        if (!message) {
+          return null;
+        }
+
+        message.variant = total > 1 ? { index: index + 1, total } : null;
+        return message;
+      })
+      .filter(Boolean);
+
+    if (!messages.length) {
       return null;
     }
 
     return {
       kind: "assistant",
-      message: buildMessage("assistant", null, parseDirectModelName(item), proseNode)
+      messages
     };
   }
 
@@ -801,10 +1291,16 @@
       }
 
       const assistantItem = parseArenaAssistantItem(item);
-      if (assistantItem?.message) {
-        messages.push(assistantItem.message);
-        modelName = modelName || assistantItem.message.modelName;
+      if (!assistantItem) {
+        return;
       }
+
+      assistantItem.messages.forEach((message) => {
+        messages.push(message);
+        if (!modelName && assistantItem.messages.length === 1) {
+          modelName = message.modelName;
+        }
+      });
     });
 
     return {
@@ -910,22 +1406,50 @@
     return Array.isArray(chat.rounds) && chat.rounds.some((round) => round.user || round.left || round.right);
   }
 
+  // A transcript is only useful if it contains model answers. A battle parse of
+  // a Direct chat happily returns "user messages only", which looks like a
+  // successful export while all the answers are silently missing.
+  function hasAssistantAnswers(chat) {
+    if (!chat) {
+      return false;
+    }
+
+    if (chat.mode === MODE.DIRECT) {
+      return Array.isArray(chat.messages) && chat.messages.some((message) => message.role === "assistant");
+    }
+
+    return Array.isArray(chat.rounds) && chat.rounds.some((round) => round.left || round.right);
+  }
+
   function parseCurrentChat() {
     const chatArea = getChatArea();
     if (!chatArea) {
       throw new Error(t("error.chatContainer"));
     }
 
-    const mode = detectMode(chatArea);
+    const detection = resolveMode(chatArea);
+    const mode = detection.mode;
     if (!mode) {
       throw new Error(t("error.mode"));
     }
 
+    state.parseNote = "";
     const hostKind = getHostKind();
-    const arenaParser = mode === MODE.BATTLE ? parseArenaBattle : parseArenaDirect;
-    const arenaChat = arenaParser(chatArea);
-    if (hasExportableContent(arenaChat)) {
+    const primaryParser = mode === MODE.BATTLE ? parseArenaBattle : parseArenaDirect;
+    const rescueParser = mode === MODE.BATTLE ? parseArenaDirect : parseArenaBattle;
+
+    const arenaChat = primaryParser(chatArea);
+    if (hasExportableContent(arenaChat) && hasAssistantAnswers(arenaChat)) {
       return arenaChat;
+    }
+
+    // Detection may still be wrong on an Arena build we have not seen yet. Instead
+    // of failing (or exporting prompts without answers), rescue the export with
+    // the other parsing strategy and tell the user what happened.
+    const rescueChat = rescueParser(chatArea);
+    if (hasExportableContent(rescueChat) && hasAssistantAnswers(rescueChat)) {
+      state.parseNote = t("status.modeFallback", { mode: rescueChat.mode });
+      return rescueChat;
     }
 
     if (hostKind === HOST_KIND.LMSYS || hostKind === HOST_KIND.OTHER) {
@@ -933,6 +1457,15 @@
       if (hasExportableContent(genericDirect)) {
         return genericDirect;
       }
+    }
+
+    if (hasExportableContent(arenaChat)) {
+      return arenaChat;
+    }
+
+    if (hasExportableContent(rescueChat)) {
+      state.parseNote = t("status.modeFallback", { mode: rescueChat.mode });
+      return rescueChat;
     }
 
     throw new Error(t("error.noMessages"));
@@ -953,9 +1486,17 @@
     ];
   }
 
+  function variantSuffix(message) {
+    if (!message?.variant || message.variant.total < 2) {
+      return "";
+    }
+
+    return ` (${t("label.variant", { index: message.variant.index, total: message.variant.total })})`;
+  }
+
   function assistantLabelForMessage(message, chatMode, naming) {
     if (naming === NAMING.PER_MESSAGE) {
-      return message.modelName || "AI";
+      return `${message.modelName || "AI"}${variantSuffix(message)}`;
     }
 
     if (chatMode === MODE.BATTLE) {
@@ -970,7 +1511,7 @@
       return message.side === SIDE.RIGHT ? t("label.rightAI") : t("label.leftAI");
     }
 
-    return t("label.ai");
+    return `${t("label.ai")}${variantSuffix(message)}`;
   }
 
   function pushTranscriptEntry(entries, chatMode, naming, message) {
@@ -983,6 +1524,7 @@
       label,
       role: message.role,
       side: message.side || null,
+      variant: message.variant || null,
       modelName: message.modelName || "",
       html: message.html || "",
       text: normalizeBreaks(message.text || t("fallback.noText")),
@@ -1066,7 +1608,7 @@
 
     if (naming === NAMING.NUMBERED) {
       transcript.entries.forEach((entry, index) => {
-        entry.label = `#${index + 1}`;
+        entry.label = `#${index + 1}${variantSuffix(entry)}`;
       });
     }
 
@@ -1334,6 +1876,11 @@
     return state.root?.querySelector('[name="arena-exporter-separator"]')?.value || SEPARATOR.LINE;
   }
 
+  function getSelectedModeOverride() {
+    const value = state.root?.querySelector('[name="arena-exporter-mode"]')?.value;
+    return value === MODE_OVERRIDE.DIRECT || value === MODE_OVERRIDE.BATTLE ? value : MODE_OVERRIDE.AUTO;
+  }
+
   function getCurrentPreferencesFromUi() {
     return {
       format: getSelectedFormat(),
@@ -1341,7 +1888,8 @@
       includeSeparators: Boolean(state.root?.querySelector('[name="arena-exporter-include-separators"]')?.checked),
       separatorStyle: getSelectedSeparatorStyle(),
       customSeparator: state.root?.querySelector('[name="arena-exporter-custom-separator"]')?.value || "",
-      saveAs: Boolean(state.root?.querySelector('[name="arena-exporter-save-as"]')?.checked)
+      saveAs: Boolean(state.root?.querySelector('[name="arena-exporter-save-as"]')?.checked),
+      modeOverride: getSelectedModeOverride()
     };
   }
 
@@ -1351,7 +1899,20 @@
       ...getCurrentPreferencesFromUi()
     };
     savePreferences();
+    invalidateAnalysisCache();
     updateFormatSpecificUi();
+  }
+
+  function handleModeOverrideChange() {
+    persistPreferencesFromUi();
+    invalidateAnalysisCache();
+    const chatArea = getChatArea();
+    if (chatArea) {
+      const detection = resolveMode(chatArea);
+      updateMode(detection.mode, detection.confidence, detection.reason);
+    }
+    setStatus("");
+    refreshDiagnostics();
   }
 
   function getActionButtons() {
@@ -1370,9 +1931,10 @@
     const customSeparatorInput = state.root?.querySelector('[name="arena-exporter-custom-separator"]');
     const includeSeparatorsInput = state.root?.querySelector('[name="arena-exporter-include-separators"]');
     const saveAsInput = state.root?.querySelector('[name="arena-exporter-save-as"]');
+    const modeSelect = state.root?.querySelector('[name="arena-exporter-mode"]');
     const otherLanguageSelect = state.root?.querySelector(".arena-exporter-lang-select");
     const languageButtons = state.root ? Array.from(state.root.querySelectorAll(".arena-exporter-lang-button")) : [];
-    [formatSelect, namingSelect, separatorSelect, customSeparatorInput, includeSeparatorsInput, saveAsInput, otherLanguageSelect]
+    [formatSelect, namingSelect, separatorSelect, customSeparatorInput, includeSeparatorsInput, saveAsInput, modeSelect, otherLanguageSelect]
       .filter(Boolean)
       .forEach((control) => {
         control.disabled = nextBusy;
@@ -1433,6 +1995,10 @@
       button.setAttribute("aria-pressed", String(isActive));
     });
 
+    if (state.diagnosticsToggle) {
+      state.diagnosticsToggle.textContent = t(state.diagnosticsOpen ? "button.diagnosticsHide" : "button.diagnostics");
+    }
+
     if (state.otherLanguageSelect) {
       const isOtherLanguage = OTHER_LANGUAGES.some((item) => item.id === state.language);
       state.otherLanguageSelect.value = isOtherLanguage ? state.language : "";
@@ -1443,14 +2009,15 @@
     }
 
     if (state.badge) {
-      if (state.mode === MODE.BATTLE) {
-        state.badge.textContent = t("badge.battle");
-      } else if (state.mode === MODE.DIRECT) {
-        state.badge.textContent = t("badge.direct");
-      } else {
-        state.badge.textContent = t("badge.detecting");
-      }
+      state.badge.textContent = badgeTextForMode(state.mode, state.modeConfidence);
+      state.badge.title = t("badge.hint", {
+        reason: state.modeReason || "-",
+        confidence: state.modeConfidence || "-"
+      });
     }
+
+    updateModeWarning();
+    refreshDiagnostics();
 
     if (state.toggleButton) {
       const isOpen = state.root.dataset.open === "true";
@@ -1505,7 +2072,8 @@
         throw new Error(t("error.download"));
       }
 
-      setStatus(t("status.saved", { filename }));
+      const savedMessage = t("status.saved", { filename });
+      setStatus(state.parseNote ? `${savedMessage} - ${state.parseNote}` : savedMessage);
     } catch (error) {
       setStatus(error instanceof Error ? error.message : String(error), "error");
     } finally {
@@ -1536,12 +2104,42 @@
     });
   }
 
-  function updateMode(mode) {
-    state.mode = mode;
-    if (state.badge) {
-      state.badge.textContent = mode === MODE.BATTLE ? t("badge.battle") : t("badge.direct");
+  function badgeTextForMode(mode, confidence) {
+    if (mode === MODE.BATTLE) {
+      return confidence === CONFIDENCE.LOW ? t("badge.battleUnsure") : t("badge.battle");
     }
-    updateActions(mode);
+
+    if (mode === MODE.DIRECT) {
+      return confidence === CONFIDENCE.LOW ? t("badge.directUnsure") : t("badge.direct");
+    }
+
+    return t("badge.detecting");
+  }
+
+  function updateMode(mode, confidence, reason) {
+    state.mode = mode || null;
+    state.modeConfidence = confidence || null;
+    state.modeReason = reason || null;
+    if (state.badge) {
+      state.badge.textContent = badgeTextForMode(state.mode, confidence);
+      state.badge.dataset.confidence = confidence || CONFIDENCE.LOW;
+    }
+    updateActions(state.mode);
+  }
+
+  function updateModeWarning() {
+    if (!state.modeWarning) {
+      return;
+    }
+
+    const detection = state.detection;
+    const needsWarning =
+      detection &&
+      state.preferences.modeOverride === MODE_OVERRIDE.AUTO &&
+      detection.confidence === CONFIDENCE.LOW;
+
+    state.modeWarning.hidden = !needsWarning;
+    state.modeWarning.textContent = needsWarning ? t("status.modeUncertain") : "";
   }
 
   function togglePanel(forceOpen) {
@@ -1556,6 +2154,115 @@
     if (state.toggleButton) {
       state.toggleButton.textContent = t(nextState ? "button.close" : "button.open");
     }
+  }
+
+  function buildDiagnosticsReport() {
+    const chatArea = getChatArea();
+    const detection = state.detection || (chatArea ? detectChatMode(chatArea) : null);
+    const analysis = detection?.analysis || null;
+    let version = "unknown";
+
+    try {
+      version = chrome.runtime?.getManifest?.()?.version || "unknown";
+    } catch (error) {
+      version = "unknown";
+    }
+
+    const lines = [
+      "Arena Chat Exporter - diagnostics",
+      `time: ${new Date().toISOString()}`,
+      `url: ${location.href}`,
+      `host: ${location.hostname} (${getHostKind()})`,
+      `version: ${version}`,
+      "",
+      `detected mode: ${detection?.mode || "unknown"}`,
+      `confidence: ${detection?.confidence || "-"}`,
+      `reason: ${detection?.reason || "-"}`,
+      `mode override: ${state.preferences?.modeOverride || MODE_OVERRIDE.AUTO}`,
+      "",
+      `chat area (${SELECTORS.chatArea}): ${chatArea ? "found" : "NOT FOUND"}`,
+      `timeline root: ${analysis?.timelineFound ? "found" : "not found"}`,
+      `timeline items: ${analysis?.itemCount ?? 0}`,
+      `  user messages: ${analysis?.userCount ?? 0}`,
+      `  plain answers: ${analysis?.plainAssistantCount ?? 0}`,
+      `carousels: ${analysis?.carousels?.length ?? 0}`,
+      `slide layout: ${analysis?.slideLayout || "unknown"}`
+    ];
+
+    (analysis?.carousels || []).forEach((carousel, index) => {
+      lines.push(
+        `  carousel #${index + 1}: slides=${carousel.slideCount}, named=${carousel.namedSlideCount}, uniqueNames=${carousel.uniqueNameCount}, concreteNames=${carousel.concreteNameCount}`
+      );
+      carousel.slides.forEach((slide, slideIndex) => {
+        lines.push(
+          `    slide ${slideIndex + 1}: model="${slide.modelName || "-"}" (${slide.modelSource}), prose=${slide.proseCount}`
+        );
+      });
+    });
+
+    lines.push("", "signals:");
+    const signals = detection?.signals || [];
+    if (signals.length) {
+      signals.forEach((signal) => lines.push(`  - ${signal}`));
+    } else {
+      lines.push("  (none)");
+    }
+
+    return lines.join("\n");
+  }
+
+  function refreshDiagnostics() {
+    if (!state.diagnostics || !state.diagnosticsOpen) {
+      return;
+    }
+
+    state.diagnostics.textContent = buildDiagnosticsReport();
+  }
+
+  function toggleDiagnostics(forceOpen) {
+    if (!state.diagnostics) {
+      return;
+    }
+
+    const nextOpen = typeof forceOpen === "boolean" ? forceOpen : !state.diagnosticsOpen;
+    state.diagnosticsOpen = nextOpen;
+    state.diagnostics.hidden = !nextOpen;
+    if (state.diagnosticsToggle) {
+      state.diagnosticsToggle.setAttribute("aria-expanded", String(nextOpen));
+      state.diagnosticsToggle.textContent = t(nextOpen ? "button.diagnosticsHide" : "button.diagnostics");
+    }
+    refreshDiagnostics();
+  }
+
+  async function copyDiagnosticsReport() {
+    const report = buildDiagnosticsReport();
+
+    try {
+      await navigator.clipboard.writeText(report);
+      setStatus(t("status.diagnosticsCopied"));
+      return;
+    } catch (error) {
+      // The async clipboard API is blocked on some arena.ai pages.
+    }
+
+    const area = document.createElement("textarea");
+    area.value = report;
+    area.setAttribute("readonly", "readonly");
+    area.style.position = "fixed";
+    area.style.top = "-1000px";
+    area.style.opacity = "0";
+    document.body.appendChild(area);
+    area.select();
+
+    let copied = false;
+    try {
+      copied = document.execCommand("copy");
+    } catch (error) {
+      copied = false;
+    }
+
+    area.remove();
+    setStatus(copied ? t("status.diagnosticsCopied") : t("error.diagnosticsCopy"), copied ? "info" : "error");
   }
 
   function buildUi() {
@@ -1742,7 +2449,26 @@
     saveAsLabel.setAttribute("for", "arena-exporter-save-as");
     saveAsFieldset.append(saveAsInput, saveAsLabel);
 
-    grid.append(formatFieldset, namingFieldset, separatorFieldset, customSeparatorFieldset, saveAsFieldset);
+    const modeFieldset = document.createElement("fieldset");
+    modeFieldset.className = "arena-exporter-fieldset";
+    const modeLabel = document.createElement("label");
+    modeLabel.className = "arena-exporter-label";
+    modeLabel.dataset.i18n = "field.mode";
+    modeLabel.textContent = t("field.mode");
+    modeLabel.setAttribute("for", "arena-exporter-mode");
+    const modeSelect = document.createElement("select");
+    modeSelect.id = "arena-exporter-mode";
+    modeSelect.name = "arena-exporter-mode";
+    modeSelect.className = "arena-exporter-select";
+    modeSelect.innerHTML = [
+      `<option value="auto" data-i18n-option="mode.auto"${state.preferences.modeOverride === MODE_OVERRIDE.AUTO ? " selected" : ""}>${t("mode.auto")}</option>`,
+      `<option value="direct" data-i18n-option="mode.direct"${state.preferences.modeOverride === MODE_OVERRIDE.DIRECT ? " selected" : ""}>${t("mode.direct")}</option>`,
+      `<option value="battle" data-i18n-option="mode.battle"${state.preferences.modeOverride === MODE_OVERRIDE.BATTLE ? " selected" : ""}>${t("mode.battle")}</option>`
+    ].join("");
+    modeSelect.addEventListener("change", handleModeOverrideChange);
+    modeFieldset.append(modeLabel, modeSelect);
+
+    grid.append(formatFieldset, modeFieldset, namingFieldset, separatorFieldset, customSeparatorFieldset, saveAsFieldset);
 
     const actionGrid = document.createElement("div");
     actionGrid.className = "arena-exporter-actions";
@@ -1756,7 +2482,35 @@
     status.className = "arena-exporter-status";
     status.dataset.tone = "info";
 
-    panel.append(grid, actionGrid, hint, status);
+    const modeWarning = document.createElement("p");
+    modeWarning.className = "arena-exporter-mode-warning";
+    modeWarning.hidden = true;
+
+    const diagnosticsBar = document.createElement("div");
+    diagnosticsBar.className = "arena-exporter-diagnostics-bar";
+
+    const diagnosticsToggle = document.createElement("button");
+    diagnosticsToggle.type = "button";
+    diagnosticsToggle.className = "arena-exporter-link-button";
+    diagnosticsToggle.dataset.i18n = "button.diagnostics";
+    diagnosticsToggle.textContent = t("button.diagnostics");
+    diagnosticsToggle.setAttribute("aria-expanded", "false");
+    diagnosticsToggle.addEventListener("click", () => toggleDiagnostics());
+
+    const diagnosticsCopy = document.createElement("button");
+    diagnosticsCopy.type = "button";
+    diagnosticsCopy.className = "arena-exporter-link-button";
+    diagnosticsCopy.dataset.i18n = "button.diagnosticsCopy";
+    diagnosticsCopy.textContent = t("button.diagnosticsCopy");
+    diagnosticsCopy.addEventListener("click", () => copyDiagnosticsReport());
+
+    diagnosticsBar.append(diagnosticsToggle, diagnosticsCopy);
+
+    const diagnostics = document.createElement("pre");
+    diagnostics.className = "arena-exporter-diagnostics";
+    diagnostics.hidden = true;
+
+    panel.append(grid, actionGrid, modeWarning, hint, status, diagnosticsBar, diagnostics);
     shell.append(topbar, panel);
     root.appendChild(shell);
 
@@ -1776,6 +2530,10 @@
     state.badge = badge;
     state.actionGrid = actionGrid;
     state.status = status;
+    state.modeWarning = modeWarning;
+    state.diagnostics = diagnostics;
+    state.diagnosticsToggle = diagnosticsToggle;
+    state.diagnosticsCopyButton = diagnosticsCopy;
     state.toggleButton = toggle;
     state.languageToggle = languageToggle;
     state.otherLanguageSelect = otherLanguageSelect;
@@ -1811,7 +2569,8 @@
       return false;
     }
 
-    const mode = detectMode(chatArea);
+    const detection = resolveMode(chatArea);
+    const mode = detection.mode;
     if (!mode) {
       return false;
     }
@@ -1820,9 +2579,12 @@
       return false;
     }
 
-    if (state.mode !== mode) {
-      updateMode(mode);
+    if (state.mode !== mode || state.modeConfidence !== detection.confidence) {
+      updateMode(mode, detection.confidence, detection.reason);
     }
+
+    updateModeWarning();
+    refreshDiagnostics();
 
     return true;
   }
@@ -1841,6 +2603,32 @@
       subtree: true
     });
   }
+
+  // Exposed for the diagnostics panel and for the jsdom test suite in tests/.
+  window.__arenaExporterInternals = {
+    MODE,
+    MODE_OVERRIDE,
+    CONFIDENCE,
+    SELECTORS,
+    I18N,
+    state,
+    t,
+    detectChatMode,
+    detectMode,
+    resolveMode,
+    analyzeChatStructure,
+    readModeLabelEvidence,
+    getCachedEvidence,
+    parseCurrentChat,
+    render,
+    buildDiagnosticsReport,
+    buildTranscript,
+    renderTxt,
+    renderMarkdown,
+    renderHtml,
+    getTimelineItems,
+    invalidateAnalysisCache
+  };
 
   Promise.all([
     runtimeMessage({ type: "ARENA_EXPORTER_PING" }).catch(() => ({ ok: false })),

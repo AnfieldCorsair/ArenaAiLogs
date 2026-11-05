@@ -5,12 +5,16 @@ A Manifest V3 extension for Chrome, Chromium, and Brave. It injects an export me
 ## Features
 
 - Direct and Side-by-Side chat export.
+- Direct chats where Arena offers two answers to pick from: both answers are exported and labelled `option 1 of 2` / `option 2 of 2` instead of being mistaken for a battle.
 - Formats: `TXT`, `Markdown`, `HTML`, `PDF`.
 - HTML export keeps a readable battle layout: user prompt on top, left and right answers in columns.
 - PDF export preserves Unicode text visually without `????`; use HTML or TXT when reliable text copying matters.
 - Assistant label modes: `1 / 2`, `Left model / Right model`, `AI`, real model names in the file header, or real model names per message.
 - Configurable spacing between messages: normal spacing creates 3 blank lines, large spacing creates 8.
 - Media tags (`img`, `svg`, `canvas`, `video`) are replaced with placeholders like `[Media 1]`.
+- Chat mode is detected from evidence (mode selector label, per-slide model names, answer-slot geometry), not from "there is a carousel on the page".
+- Manual `Chat mode` override (`Auto-detect` / `Direct chat` / `Side-by-Side`) when the page changes again.
+- Built-in diagnostics: one click shows why a mode was detected, how many carousels/slides were found and which selectors matched, plus `Copy report`.
 - EN/RU/DE/ES/PT interface toggle.
 - Preferences are persisted with `chrome.storage`.
 
@@ -26,7 +30,7 @@ A Manifest V3 extension for Chrome, Chromium, and Brave. It injects an export me
 
 1. Open a chat on `arena.ai` or `chat.lmsys.org`.
 2. Wait for the `Export Chat` block below the composer.
-3. Choose language, format, assistant labels, and separator style.
+3. Choose language, format, assistant labels, separator style and, if needed, the chat mode.
 4. Enable `Ask where to save` only if you want Chrome's save dialog.
 5. Click the export action you need.
 
@@ -56,10 +60,31 @@ Run static release checks from the repository root:
 powershell -ExecutionPolicy Bypass -File chrome-extension/tests/static-checks.ps1
 ```
 
+Run the DOM parsing regression tests (Node 18+, they use jsdom and synthetic Arena snapshots):
+
+```bash
+cd chrome-extension/tests
+npm install
+npm test
+```
+
+The suite covers the "two answers in a Direct chat" layout, both Side-by-Side layouts, a missing mode label, a closed dropdown that keeps its options in the DOM, the manual override and the rescue parsing path.
+
+## Chat Mode Detection
+
+The mode badge in the panel shows how the mode was chosen:
+
+- `Mode: Direct` / `Mode: Side-by-Side` — a confident detection;
+- `Mode: Direct (?)` — the page gave no clear marker, so the answer-variant interpretation was used. The export still works, but the mode can be fixed manually;
+- dashed badge — auto-detection is uncertain or a manual override is active.
+
+Click `Diagnostics` to see the reason (`mode-selector-label`, `shared-slide-models`, `distinct-slide-models`, `answers-in-one-slot`, `ambiguous-carousel`, `manual-override`) together with slide/model counts.
+
 ## Limitations
 
 - PDF is best treated as a visual archive. Use HTML for copy-friendly text and the best Side-by-Side layout.
 - `chat.lmsys.org` support uses a best-effort fallback because its DOM can vary from Arena snapshots.
+- If Arena ships a new layout, detection may report `(?)`. Use the `Chat mode` override and send the `Copy report` output in the bug report.
 
 
 ## 🛡️ Security & Privacy Audit

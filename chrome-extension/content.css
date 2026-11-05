@@ -253,6 +253,77 @@
   color: hsl(var(--destructive, 0 75% 45%));
 }
 
+#arena-exporter-root .arena-exporter-badge[data-confidence="low"] {
+  border-style: dashed;
+  border-color: hsl(var(--warning, 35 90% 45%));
+  color: hsl(var(--warning, 35 90% 40%));
+}
+
+#arena-exporter-root .arena-exporter-badge[data-confidence="manual"] {
+  border-color: hsl(var(--interactive-active, 210 90% 45%));
+  color: hsl(var(--interactive-active, 210 90% 40%));
+}
+
+#arena-exporter-root .arena-exporter-mode-warning {
+  margin: 0.5rem 0 0;
+  padding: 0.5rem 0.65rem;
+  border: 1px dashed hsl(var(--warning, 35 90% 45%));
+  border-radius: 10px;
+  background: hsl(var(--warning-subtle, 35 90% 96%));
+  color: hsl(var(--warning, 35 90% 30%));
+  font-size: 0.75rem;
+  line-height: 1.45;
+}
+
+#arena-exporter-root .arena-exporter-mode-warning[hidden] {
+  display: none;
+}
+
+#arena-exporter-root .arena-exporter-diagnostics-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.35rem;
+}
+
+#arena-exporter-root .arena-exporter-link-button {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: hsl(var(--interactive-active, 210 90% 45%));
+  cursor: pointer;
+  padding: 0;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+#arena-exporter-root .arena-exporter-link-button:hover {
+  opacity: 0.8;
+}
+
+#arena-exporter-root .arena-exporter-diagnostics {
+  margin: 0.5rem 0 0;
+  max-height: 15rem;
+  overflow: auto;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid hsl(var(--border-faint, 0 0% 80%));
+  border-radius: 10px;
+  background: hsl(var(--surface-primary, 0 0% 100%));
+  color: hsl(var(--text-secondary, 0 0% 30%));
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 0.7rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+#arena-exporter-root .arena-exporter-diagnostics[hidden] {
+  display: none;
+}
+
 @media (max-width: 768px) {
   #arena-exporter-root .arena-exporter-topbar {
     flex-direction: column;
